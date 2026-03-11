@@ -12,7 +12,7 @@ output:
     code_folding: hide
     df_print: paged
 editor_options:
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
@@ -63,7 +63,7 @@ By the end of this lab, you should be able to:
 
 ## Load and inspect
 
-```{r load_data, echo=TRUE, eval=FALSE}
+```{r load_data, echo=TRUE, eval=TRUE}
 # GOAL: Read the dataset and clean the names.
 
 df <- read_csv("data/us-ams-simple.csv", na = c("-9999")) %>%
@@ -75,7 +75,7 @@ glimpse(df)
 
 ## Derive time columns (if needed)
 
-```{r derive_time, echo=TRUE, eval=FALSE}
+```{r derive_time, echo=TRUE, eval=TRUE}
 # GOAL: Create date / month / day_night columns as in earlier labs.
 
 df <- df %>%
@@ -101,8 +101,8 @@ Possible examples:
 - `gpp`
 - `le`
 
-```{r choose_variable, echo=TRUE, eval=FALSE}
-target_var <- "___"
+```{r choose_variable, echo=TRUE, eval=TRUE}
+target_var <- "gpp"
 
 # CHECK: does this variable exist?
 target_var %in% names(df)
@@ -112,11 +112,11 @@ target_var %in% names(df)
 
 Write the population parameter you care about:
 
-> $\mu$ = the true 2023 population mean of `___`
+> $\mu$ = the true 2023 population mean of `gpp`
 
 Fill in the blank in words:
 
-> In this lab, my population parameter is the true annual mean of **`___`** at the US-AMS site.
+> In this lab, my population parameter is the true annual mean of **`gpp`** at the US-AMS site.
 
 ---
 
@@ -146,12 +146,12 @@ Fill these in:
 
 ## 4) Draw one sample and compute the sample mean
 
-```{r draw_sample, echo=TRUE, eval=FALSE}
+```{r draw_sample, echo=TRUE, eval=TRUE}
 # GOAL: Draw one random sample and compute its mean.
 
-set.seed(___)
+set.seed(111)
 
-n_samp <- ___   # e.g., 200
+n_samp <- 250   # e.g., 200
 
 samp <- df %>%
   filter(!is.na(.data[[target_var]])) %>%
@@ -170,12 +170,12 @@ sample_mean
 
 ## 5) Bootstrap the sample mean
 
-```{r bootstrap_means, echo=TRUE, eval=FALSE}
+```{r bootstrap_means, echo=TRUE, eval=TRUE}
 # GOAL: Bootstrap the sample mean to estimate uncertainty.
 
-set.seed(___)
+set.seed(111)
 
-B <- ___   # e.g., 4000
+B <- 1500   # e.g., 4000
 
 boot_means <- replicate(
   B,
@@ -187,11 +187,11 @@ head(boot_means)
 
 ## 6) Estimate uncertainty
 
-```{r bootstrap_summary, echo=TRUE, eval=FALSE}
+```{r bootstrap_summary, echo=TRUE, eval=TRUE}
 # GOAL: Compute the bootstrap SE and 95% CI.
 
 boot_se <- sd(boot_means)
-boot_ci <- quantile(boot_means, probs = c(___, ___))
+boot_ci <- quantile(boot_means, probs = c(0.025, 0.975))
 
 tibble(
   sample_mean = sample_mean,
@@ -211,10 +211,10 @@ tibble(
 
 Define the null value from your claim.
 
-```{r hypothesis_test, echo=TRUE, eval=FALSE}
+```{r hypothesis_test, echo=TRUE, eval=TRUE}
 # GOAL: Compute z and p-value for your claim.
 
-mu0 <- ___   # numeric claim value
+mu0 <- 4   # numeric claim value
 
 z_stat <- (sample_mean - mu0) / boot_se
 
@@ -241,11 +241,11 @@ Use your p-value and CI to answer:
 
 Fill in:
 
-> The null value `___` is / is not inside my 95% CI.
+> The null value `4` is not inside my 95% CI.
 
-> My p-value is `___`, which is small / large.
+> My p-value is `.00694`, which is very small.
 
-> Therefore, I would / would not reject $H_0$ at the 0.05 level.
+> Therefore, I would reject $H_0$ at the 0.05 level.
 
 **Prompt (4–6 sentences):** Explain your decision in plain language. Do the data make the claim look plausible or surprising? Be careful: “fail to reject” does not mean “prove true.”
 
@@ -255,20 +255,20 @@ Fill in:
 
 ## 9) Visualize the hypothesis test
 
-```{r plot_test, echo=TRUE, eval=FALSE}
+```{r plot_test, echo=TRUE, eval=TRUE}
 # GOAL: Plot the bootstrap distribution, sample mean, CI, and null value.
 
 ggplot(tibble(boot_mean = boot_means), aes(x = boot_mean)) +
-  geom_histogram(bins = ___, alpha = 0.8) +
+  geom_histogram(bins = 35, alpha = 0.8) +
   geom_vline(xintercept = sample_mean, linetype = "dashed", linewidth = 1.1) +
   geom_vline(xintercept = boot_ci, color = "red", linewidth = 1.1) +
   geom_vline(xintercept = mu0, color = "blue", linewidth = 1.1) +
-  theme_classic(base_size = 18) +
+  theme_classic(base_size = 13.5) +
   labs(
     x = paste0("Bootstrap mean of ", target_var),
     y = "Count",
-    title = "Bootstrap distribution and null claim",
-    subtitle = "Dashed = sample mean; Red = 95% CI; Blue = null value"
+    title = "Bootstrap Distribution and Null Claim",
+    subtitle = "Dashed = Sample Mean; Red = 95% CI; Blue = Null Value"
   )
 ```
 
@@ -282,10 +282,10 @@ ggplot(tibble(boot_mean = boot_means), aes(x = boot_mean)) +
 
 Keep the same variable, but test a **different null value**.
 
-```{r second_claim, echo=TRUE, eval=FALSE}
+```{r second_claim, echo=TRUE, eval=TRUE}
 # GOAL: Test a second claim using the same sample and bootstrap SE.
 
-mu0_alt <- ___
+mu0_alt <- 100
 
 z_stat_alt <- (sample_mean - mu0_alt) / boot_se
 p_value_alt <- 2 * pnorm(-abs(z_stat_alt))
