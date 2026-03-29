@@ -136,11 +136,11 @@ Now turn your claim into hypotheses:
 
 Fill these in:
 
-> My claim is: `___`
+> My claim is: `The annual mean GPP is 5.5 µmolCO2 m-2 s-1`
 
-> $H_0$: `___`
+> $H_0$: `The annual mean GPP is 0, and there is no correlation between GPP and time.`
 
-> $H_A$: `___`
+> $H_A$: `The annual mean GPP is 5.5 µmolCO2 m-2 s-1`
 
 ---
 
@@ -164,7 +164,7 @@ sample_mean
 
 **Prompt (2–3 sentences):** How does your sample mean compare to your claim? Is it close, or already quite different?
 
-> *Write your answer here.*
+> *The sample mean is less than my hypothesis claim, being 5.728 instead of 5.5 µmolCO2 m-2 s-1. These are close overall, and displays a claim that can likely be used within a certain standard deviation of the mean.*
 
 ---
 
@@ -203,7 +203,7 @@ tibble(
 
 **Prompt (2–3 sentences):** What does the bootstrap SE tell you? What does the 95% CI tell you?
 
-> *Write your answer here.*
+> *The bootstrap SE tells me that the bootstrapped sample mean had a standard error of +- 0.64 µmolCO2 m-2 s-1, and that my alternate hypothesis of 5.5 µmolCO2 m-2 s-1 is within this this standard error measurement. The 95% confidence intervals give us the specific quantitative value of the sample mean according to the standard error within 95% confidence.*
 
 ---
 
@@ -214,7 +214,7 @@ Define the null value from your claim.
 ```{r hypothesis_test, echo=TRUE, eval=TRUE}
 # GOAL: Compute z and p-value for your claim.
 
-mu0 <- 4   # numeric claim value
+mu0 <- 0.1   # numeric claim value
 
 z_stat <- (sample_mean - mu0) / boot_se
 
@@ -241,15 +241,15 @@ Use your p-value and CI to answer:
 
 Fill in:
 
-> The null value `4` is not inside my 95% CI.
+> The null value `0` is not inside my 95% CI.
 
-> My p-value is `.00694`, which is very small.
+> My p-value is `1.469008e-18`, which is very small.
 
 > Therefore, I would reject $H_0$ at the 0.05 level.
 
 **Prompt (4–6 sentences):** Explain your decision in plain language. Do the data make the claim look plausible or surprising? Be careful: “fail to reject” does not mean “prove true.”
 
-> *Write your answer here.*
+> *The p-value that is interpreting if 0 is plausible against the true mean of the population is found to be 1.469008e-18, which is extremely low. This reveals that we can reject the null hypothesis, which is that the mean GPP over the year is 0. This makes plausible sense because you would expect at least some amount of GPP over a given year. It also makes sense because the true mean of the population is 5.7 with a standard error of only .64, this puts a value of 0 highly outside this range, so we can reject the null hypothesis. *
 
 ---
 
@@ -274,7 +274,7 @@ ggplot(tibble(boot_mean = boot_means), aes(x = boot_mean)) +
 
 **Prompt (2–3 sentences):** Does the plot agree with your p-value-based conclusion? Explain.
 
-> *Write your answer here.*
+> *Yes, the plot agrees with the p-value based conclusion because the blue line displaying the null hypothesis is extremely outside of the bootstrap distirbution range. This aligns with the small p-value of 1.469008e-18. *
 
 ---
 
@@ -285,7 +285,7 @@ Keep the same variable, but test a **different null value**.
 ```{r second_claim, echo=TRUE, eval=TRUE}
 # GOAL: Test a second claim using the same sample and bootstrap SE.
 
-mu0_alt <- 100
+mu0_alt <- 10
 
 z_stat_alt <- (sample_mean - mu0_alt) / boot_se
 p_value_alt <- 2 * pnorm(-abs(z_stat_alt))
@@ -299,7 +299,7 @@ tibble(
 
 **Prompt (3–4 sentences):** How did changing the null value change the conclusion? What does this tell you about the relationship between the null hypothesis and the observed estimate?
 
-> *Write your answer here.*
+> *Changing the null value kept the p-value around the same, being extremely low. This displays that the null hypothesis can be rejected and that the observed estimate provided by the bootstrap sample mean shows correlation between GPP and time.
 
 ---
 
@@ -323,12 +323,12 @@ You will first work with a built-in grouping variable (**day vs night**), then c
 
 If you already created `day_night` earlier, you can reuse it. Otherwise, create it here.
 
-```{r make_daynight, echo=TRUE, eval=FALSE}
+```{r make_daynight, echo=TRUE, eval=TRUE}
 # GOAL: create a day/night grouping variable from `daytime`.
 
 df <- df %>%
   mutate(
-    day_night = if_else(___ == 1, "Day", "Night")
+    day_night = if_else(daytime == 1, "Day", "Night")
   )
 
 df %>% count(day_night)
@@ -347,8 +347,8 @@ Possible examples:
 - `gpp`
 - `le`
 
-```{r choose_response_ttest, echo=TRUE, eval=FALSE}
-response_var <- "___"
+```{r choose_response_ttest, echo=TRUE, eval=TRUE}
+response_var <- "gpp"
 
 # CHECK: does this variable exist?
 response_var %in% names(df)
@@ -366,25 +366,28 @@ You may use:
 - `geom_jitter()`
 - or a combination
 
-```{r plot_daynight, echo=TRUE, eval=FALSE}
+```{r plot_daynight, echo=TRUE, eval=TRUE}
 # GOAL: visualize the response by day/night group.
+df <- df %>%
+  filter(!is.na(day_night)) %>%
+  droplevels()
 
 df %>%
   filter(!is.na(.data[[response_var]])) %>%
-  ggplot(aes(x = ___, y = ___, fill = ___)) +
-  geom_boxplot(alpha = 0.8) +
-  theme_classic(base_size = 18) +
+  ggplot(aes(x = day_night, y = gpp)) +
+  geom_jitter(alpha = 0.5) +
+  theme_classic(base_size = 15) +
   labs(
     x = NULL,
     y = response_var,
-    title = "Response by day vs night"
+    title = "GPP by day vs night"
   )
 ```
 
 **Prompt (2–3 sentences):** Before running the test, what do you predict?  
 Do the groups look different in center? In spread?
 
-> *Write your answer here.*
+> *I predict that the GPP at night will be close to 0 since there is no light for photosynthesis to occur. I think this would display a center at 0 and a narrow spread, while the Daytime GPP would display a larger range with more positive values, possibly a center around 10 since the mean over day and night is 5.*
 
 ---
 
@@ -392,16 +395,16 @@ Do the groups look different in center? In spread?
 
 Compute the group means, SDs, and sample sizes.
 
-```{r summarize_daynight, echo=TRUE, eval=FALSE}
+```{r summarize_daynight, echo=TRUE, eval=TRUE}
 # GOAL: summarize the response variable by day/night group.
 
 group_summary <- df %>%
   filter(!is.na(.data[[response_var]])) %>%
-  group_by(___) %>%
+  group_by(day_night) %>%
   summarise(
-    mean_response = ___,
-    sd_response = ___,
-    n = ___,
+    mean_response = mean(gpp),
+    sd_response = sd(gpp),
+    n = n(),
     .groups = "drop"
   )
 
@@ -421,11 +424,11 @@ Use this structure:
 
 Fill in:
 
-> My response variable is `___`
+> My response variable is `gpp`
 
-> $H_0$: `___`
+> $H_0$: `The GPP is the same whether it is day or night.`
 
-> $H_A$: `___`
+> $H_A$: `The GPP is higher in the day than it is at night.`
 
 ---
 
@@ -433,12 +436,12 @@ Fill in:
 
 Use `t.test()` to compare the means of your response variable between Day and Night.
 
-```{r ttest_daynight, echo=TRUE, eval=FALSE}
+```{r ttest_daynight, echo=TRUE, eval=TRUE}
 # GOAL: run a two-sample t-test by formula.
 
 t.test(
-  ___ ~ ___,
-  data = ___
+  gpp ~ day_night,
+  data = df 
 )
 ```
 
@@ -446,7 +449,7 @@ t.test(
 Would you reject the null hypothesis at $\alpha = 0.05$?  
 What does the result imply about day vs night differences in your chosen variable?
 
-> *Write your answer here.*
+> *The p-value is < 2.2E-16 (basically 0), and the confidence interval is 95%. I would reject the null hypothesis that the GPP is the same whether it is day or night, because the p-value comparing day and night is extremely low, proving extremely dissimilar results in a 95% confidence interval. The result implies that GPP is very different during the day vs during the night.*
 
 ---
 
@@ -454,12 +457,12 @@ What does the result imply about day vs night differences in your chosen variabl
 
 Extract the confidence interval and interpret it as a difference in means.
 
-```{r ttest_store, echo=TRUE, eval=FALSE}
+```{r ttest_store, echo=TRUE, eval=TRUE}
 # GOAL: store the t-test result in an object.
 
 tt_daynight <- t.test(
-  ___ ~ ___,
-  data = ___
+  gpp ~ day_night,
+  data = df
 )
 
 tt_daynight$conf.int
@@ -468,7 +471,7 @@ tt_daynight$conf.int
 **Prompt (2–3 sentences):** Does the confidence interval include 0?  
 How does that connect to the hypothesis test decision?
 
-> *Write your answer here.*
+> *The confidence interval does not include the value 0. This connects to the hypothesis test conclusion because if the confidence included 0, you could fail to reject the null hypothesis. This would be because the null hypothesis is 0.*
 
 ---
 
@@ -476,19 +479,19 @@ How does that connect to the hypothesis test decision?
 
 Create bootstrap distributions of the **group means** for Day and Night separately.
 
-```{r bootstrap_group_means, echo=TRUE, eval=FALSE}
-set.seed(___)
+```{r bootstrap_group_means, echo=TRUE, eval=TRUE}
+set.seed(501)
 
-B <- ___   # e.g., 2000
+B <- 501   # e.g., 2000
 
 x_day <- df %>%
   filter(day_night == "Day") %>%
-  pull(___) %>%
+  pull(gpp) %>%
   na.omit()
 
 x_night <- df %>%
   filter(day_night == "Night") %>%
-  pull(___) %>%
+  pull(gpp) %>%
   na.omit()
 
 boot_day <- replicate(
@@ -507,11 +510,11 @@ boot_groups <- bind_rows(
 )
 ```
 
-```{r plot_boot_groups, echo=TRUE, eval=FALSE}
+```{r plot_boot_groups, echo=TRUE, eval=TRUE}
 # GOAL: visualize the bootstrap distributions by group.
 
 ggplot(boot_groups, aes(x = mean_est, fill = group)) +
-  geom_histogram(alpha = 0.45, bins = ___, position = "identity") +
+  geom_histogram(alpha = 1, bins = 100, position = "identity") +
   theme_classic(base_size = 18) +
   labs(
     x = paste0("Bootstrap mean of ", response_var),
@@ -523,7 +526,7 @@ ggplot(boot_groups, aes(x = mean_est, fill = group)) +
 **Prompt (3–4 sentences):** How does this bootstrap visualization help you understand the t-test result?  
 Do the plausible group means strongly overlap, or are they clearly separated?
 
-> *Write your answer here.*
+> *This bootstrap plot helps me understand the t-test results because you can strongly visualize how different Day and Night GPP are. The Night is clearly centered around 0 µmolCO2 m-2 s-1, while the Daytime GPP is clearly separated at around 11 µmolCO2 m-2 s-1.*
 
 ---
 
@@ -541,20 +544,23 @@ You must:
 - define the grouping variable clearly
 - explain why the grouping is scientifically meaningful
 
-```{r choose_second_group, echo=TRUE, eval=FALSE}
+```{r choose_second_group, echo=TRUE, eval=TRUE}
 # GOAL: create your own two-level grouping variable.
+month_levels <- month.abb
 
-df <- df %>%
+df_day <- df %>%
+  filter(day_night == "Day") %>%  
+  droplevels() %>%
   mutate(
-    my_group = ___
+    my_group = factor(month, levels = month_levels)
   )
 
-df %>% count(my_group)
+df_day %>% count(my_group)
 ```
 
 **Prompt (2–3 sentences):** Why did you choose this grouping variable? What scientific contrast are you testing?
 
-> *Write your answer here.*
+> *I chose this grouping variable to test the differences in GPP over a yearly cycle of just Daytimes. Doing this I chose to group by months to be able to visualize the monthly change in daytime GPP over a year.*
 
 ---
 
@@ -567,29 +573,49 @@ Repeat the workflow:
 4. run `t.test()`
 5. interpret
 
-```{r visualize_second_group, echo=TRUE, eval=FALSE}
+```{r visualize_second_group, echo=TRUE, eval=TRUE}
 # GOAL: visualize your response by your chosen grouping variable.
 
-___
+df_day %>%
+  ggplot(aes(x = my_group, y = gpp)) +
+  geom_jitter(alpha = 0.45, color = "seagreen") +
+  theme_classic(base_size = 15) +
+  theme(axis.text.x = element_text(size = 11)) +
+  labs(
+    x = NULL,
+    y = "GPP (µmolCO2 m-2 s-1) ",
+    title = "Daytime GPP Monthly"
+  )
+
 ```
 
-```{r summarize_second_group, echo=TRUE, eval=FALSE}
+```{r summarize_second_group, echo=TRUE, eval=TRUE}
 # GOAL: summarize your response variable by your chosen grouping variable.
+group_summary2 <- df_day %>%
+  group_by(my_group) %>%
+  summarise(
+    mean_response = mean(gpp),
+    sd_response = sd(gpp),
+    n = n(),
+  )
 
-___
+group_summary2
+
 ```
 
-```{r ttest_second_group, echo=TRUE, eval=FALSE}
+```{r ttest_second_group, echo=TRUE, eval=TRUE}
 # GOAL: run a two-sample t-test for your chosen grouping variable.
 
-___
+anova_res <- aov(gpp ~ my_group, data = df_day)
+summary(anova_res)
 ```
 
 **Prompt (5–6 sentences):** Compare the day/night t-test to your second grouping-variable test.  
 Which contrast was stronger? Which was more scientifically meaningful?  
 Did the two tests produce similar or different conclusions?
 
-> *Write your answer here.*
+> **I ran an ANOVA test instead because I have more than 2 categories to compare a monthly grouping variable with GPP**
+> *Both the day/night t-test and the Daytime Monthly t-test had extremely low p-values, both being < 2.2E-16. I think this makes sense because statistically the GPP in the winter months was practically 0, even in the daytime, and the ANOVA test compared this 0 value to the much higher summer GPP monthly values of 20 or so. This high variability is very similar to the variability between day/night, being around 0 at night and around 10-20ss in the day. However, the day/night was more scientifically meaningful because there was less variability between the 2 groups, while the ANOVA test, comparing many groups, saw more variability. However, overall, the two test produced similar conclusions.*
 
 ---
 
@@ -601,7 +627,7 @@ Answer in **4–6 sentences**:
 - What changes when we move from “testing one mean” to “testing a difference in means”?
 - How did the bootstrap group-mean plot help your understanding?
 
-> *Write your answer here.*
+> *A two-sample t-test is similar to the one-mean hypothesis test because it is comparing variables to each other. However, when testing the comparison of just one mean, there is only one variable that has data variability (that being the sample). When doing a two-sample t-test, you are comparing two mean values with distinct variabilities, and quantifying how nearby those values are within a interval of 95% confidence, this tests the difference within means. The bootstrap group-mean plot helped this understanding by visualizing the separation between the density of yearly GPP amounts during strictly in the day, vs the density of yearly GPP amounts strictly at night. In this model, we see clearly the separation in averages caused by grouping by day/night, and that nighttime has a GPP of 0, while daytime is slightly broader with ranges of values in the 10s, showing higher GPP during the day.*
 
 
 # Submission
